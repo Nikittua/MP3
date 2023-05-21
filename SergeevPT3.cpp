@@ -15,24 +15,24 @@ string timeStampsFile = "timestamps.txt";
 
 ofstream fout(outputFile);
 
-const int batchNum = 7;
-const int hashDims = 500000;
-const int maxStringLenght = 1000;
-const int dims[7] = { 100, 500, 1000, 5000, 10000, 50000, 100000 };
+const int Num = 7;
+const int hashes = 500000;
+const int maxlen = 1000;
+const int arr[7] = { 100, 500, 1000, 5000, 10000, 50000, 100000 };
 const unsigned long long module = 2147483647; //большое простое число
 const int p = 41;
-vector<long long> p_pow(maxStringLenght);
+vector<long long> p_pow(maxlen);
 
 //key: companyName
 
 //простой хэш
-unsigned int naiveHash(string key) {
+unsigned int easyHash(string key) {
     unsigned int result = 1;
 
     for (int i = 0; i < key.length(); ++i)
-        result = (result * (key[i] - 'a' + 1)) % hashDims;
+        result = (result * (key[i] - 'a' + 1)) % hashes;
 
-    return result % hashDims;
+    return result % hashes;
 }
 
 //сложный хэш
@@ -41,7 +41,7 @@ unsigned int complicatedHash(string key) {
     for (size_t j = 0; j < key.length(); ++j)
         hash = (hash + (key[j] - 'a' + 1) * p_pow[j]) % module;
 
-    return hash % hashDims;
+    return hash % hashes;
 }
 
 class Flight {
@@ -60,7 +60,7 @@ public:
         this->date = 0;
         this->time = 0;
         this->passengerNumber = 0;
-        this->hash = naiveHash(this->companyName);
+        this->hash = easyHash(this->companyName);
     }
 
     Flight(int number,
@@ -136,7 +136,7 @@ vector<vector<Flight>> readTxtFile(unsigned int (*hashFunc)(string)) {
     unsigned long long time;
     int passengerNumber;
 
-    for (int i = 0; i < batchNum; ++i) {
+    for (int i = 0; i < Num; ++i) {
         //Ввод числа объектов
         fin >> dim;
         vector<Flight> v;
@@ -167,7 +167,7 @@ class HashTable {
 
 public:
     HashTable() {
-        table.resize(hashDims);
+        table.resize(hashes);
     }
 
     void insert(Flight& item) {
@@ -190,7 +190,7 @@ public:
 
     void clear() {
         this->table.clear();
-        this->table.resize(hashDims);
+        this->table.resize(hashes);
     }
 
 
@@ -214,7 +214,7 @@ int main()
     for (size_t i = 1; i < p_pow.size(); ++i)
         p_pow[i] = p_pow[i - 1] * p;
 
-    vector<vector<Flight>> naiveArray = readTxtFile(naiveHash);
+    vector<vector<Flight>> naiveArray = readTxtFile(easyHash);
 
     HashTable naiveTable;
 
@@ -222,7 +222,7 @@ int main()
 
     fout << "Простая хэш функция:\n" << '\n';
 
-    for (int i = 0; i < batchNum; ++i) {
+    for (int i = 0; i < Num; ++i) {
         //заполнение таблицы
         for (int j = 0; j < naiveArray[i].size(); ++j)
             naiveTable.insert(naiveArray[i][j]);
@@ -251,7 +251,7 @@ int main()
 
     fout << "Сложная хэш функция:\n" << '\n';
 
-    for (int i = 0; i < batchNum; ++i) {
+    for (int i = 0; i < Num; ++i) {
         //заполнение таблицы
         for (int j = 0; j < complicatedArray[i].size(); ++j)
             complicatedTable.insert(complicatedArray[i][j]);
